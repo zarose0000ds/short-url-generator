@@ -47,9 +47,12 @@ app.post('/', (req, res) => {
   SHORTEN_KEYS.forEach(id => {
     shortenCode += hashedURL[id]
   })
-  console.log(`[Shorten URL] http://localhost:${PORT}/${shortenCode}`)
 
-  ShortURL.create({ code: shortenCode, original }).then(() => res.redirect('/')).catch(e => console.log(e))
+  const shortenURL = `http://localhost:${PORT}/${shortenCode}`
+  console.log(`[Shorten URL] ${shortenURL}`)
+
+  // ADD TO DB IF NOT EXIST
+  ShortURL.create({ code: shortenCode, original }).then(() => res.render('success', { shortenURL })).catch(e => console.log(e))
 })
 
 app.get('/:code', (req, res) => {
