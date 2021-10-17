@@ -37,23 +37,24 @@ app.get('/', (req, res) => {
 })
 
 app.post('/', (req, res) => {
+  const original = req.body.url
+  
   // GENERATE SHORTEN URL
   const hash = sha256.create()
-  const hashedURL = hash.update(req.body.url).hex()
-  let shortenURL = `http://localhost:${PORT}/`
+  const hashedURL = hash.update(original).hex()
+  let shortenCode = ''
 
   SHORTEN_KEYS.forEach(id => {
-    shortenURL += hashedURL[id]
+    shortenCode += hashedURL[id]
   })
-  console.log(`[Shorten URL] ${shortenURL}`)
+  console.log(`[Shorten URL] http://localhost:${PORT}/${shortenCode}`)
 
-  res.redirect('/')
+  ShortURL.create({ code: shortenCode, original }).then(() => res.redirect('/')).catch(e => console.log(e))
 })
 
 app.get('/:code', (req, res) => {
-  console.log(req.params.code)
-
-  res.redirect('/')
+  console.log(`Get shorten code: ${req.params.code}`)
+  ShortURL.find({ code: req.params.code }).lean().then(result => res.redirect(result[0].original)).catch(e => console.log(e))
 })
 
 // SERVER LISTENING
