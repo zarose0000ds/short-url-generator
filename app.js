@@ -38,21 +38,30 @@ app.get('/', (req, res) => {
 
 app.post('/', (req, res) => {
   const original = req.body.url
-  
-  // GENERATE SHORTEN URL
-  const hash = sha256.create()
-  const hashedURL = hash.update(original).hex()
-  let shortenCode = ''
 
-  SHORTEN_KEYS.forEach(id => {
-    shortenCode += hashedURL[id]
+  // CHECK IF ALREADY EXISTS
+  ShortURL.findOne({ original }).then(result => {
+    if (result) {
+      const shortenURL = `http://localhost:${PORT}/${result.code}`
+      console.log(`[This url has been shorten] ${shortenURL}`)
+      return res.render('success', { shortenURL })
+    }
+
+    // GENERATE SHORTEN URL
+    const hash = sha256.create()
+    const hashedURL = hash.update(original).hex()
+    let shortenCode = ''
+
+    SHORTEN_KEYS.forEach(id => {
+      shortenCode += hashedURL[id]
+    })
+
+    const shortenURL = `http://localhost:${PORT}/${shortenCode}`
+    console.log(`[Shorten URL] ${shortenURL}`)
+
+    // ADD TO DB
+    ShortURL.create({ code: shortenCode, original }).then(() => res.render('success', { shortenURL })).catch(e => console.log(e))
   })
-
-  const shortenURL = `http://localhost:${PORT}/${shortenCode}`
-  console.log(`[Shorten URL] ${shortenURL}`)
-
-  // ADD TO DB IF NOT EXIST
-  ShortURL.create({ code: shortenCode, original }).then(() => res.render('success', { shortenURL })).catch(e => console.log(e))
 })
 
 app.get('/:code', (req, res) => {
