@@ -20,8 +20,14 @@
         >
       </div>
     </header>
+    
     <main>
       {{{ body }}}
     </main>
+
+    {{#if shortenURL}}
+    <!-- scripts -->
+    <script src="/javascripts/copy.js"></script>
+    {{/if}}
   </body>
 </html>
